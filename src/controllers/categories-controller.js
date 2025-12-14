@@ -8,7 +8,7 @@ class CategoriesController {
     let token = localStorage.getItem("token");
     try {
       let response = await axios.post(
-        `https://we-start-tasks-app-default-rtdb.firebaseio.com/categories.json?auth=${token}`,
+        `https://expenses-rtk-app-default-rtdb.firebaseio.com/categories.json?auth=${token}`,
         {
           name: category.name,
         }
@@ -28,7 +28,7 @@ class CategoriesController {
     let token = localStorage.getItem("token");
     try {
       let response = await axios.get(
-        `https://we-start-tasks-app-default-rtdb.firebaseio.com/categories.json?auth=${token}`
+        `https://expenses-rtk-app-default-rtdb.firebaseio.com/categories.json?auth=${token}`
       );
       if (response.data.length != 0) {
         let categories = [];
@@ -52,7 +52,7 @@ class CategoriesController {
     let token = localStorage.getItem("token");
     try {
       let response = await axios.put(
-        `https://we-start-tasks-app-default-rtdb.firebaseio.com/categories/${category.id}.json?auth=${token}`,
+        `https://expenses-rtk-app-default-rtdb.firebaseio.com/${category.id}.json?auth=${token}`,
         {
           name: category.name,
         }
@@ -68,7 +68,7 @@ class CategoriesController {
     let token = localStorage.getItem("token");
     try {
       let response = await axios.delete(
-        `https://we-start-tasks-app-default-rtdb.firebaseio.com/categories/${id}.json?auth=${token}`
+        `https://expenses-rtk-app-default-rtdb.firebaseio.com/categories/${id}.json?auth=${token}`
       );
       return true;
     } catch (error) {

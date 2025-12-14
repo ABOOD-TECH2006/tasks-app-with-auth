@@ -7,7 +7,7 @@ class TasksController {
     let token = localStorage.getItem("token");
     try {
       let response = await axios.post(
-        `https://we-start-tasks-app-default-rtdb.firebaseio.com/tasks.json?auth=${token}`,
+        `https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks.json?auth=${token}`,
         task
       );
       return response.data.name;
@@ -20,7 +20,7 @@ class TasksController {
     let token = localStorage.getItem("token");
     try {
       let response = await axios.get(
-        `https://we-start-tasks-app-default-rtdb.firebaseio.com/tasks.json?auth=${token}`
+        `https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks.json?auth=${token}`
       );
       if (response.data.length != 0) {
         let tasks = [];
@@ -50,7 +50,7 @@ class TasksController {
     let token = localStorage.getItem("token");
     try {
       let response = await axios.delete(
-        `https://we-start-tasks-app-default-rtdb.firebaseio.com/tasks/${id}.json?auth=${token}`
+        `https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks/${id}.json?auth=${token}`
       );
       return true;
     } catch (error) {
@@ -63,7 +63,7 @@ class TasksController {
     let token = localStorage.getItem("token");
     try {
       let response = await axios.put(
-        `https://we-start-tasks-app-default-rtdb.firebaseio.com/tasks/${updatedTask.id}.json?auth=${token}`,
+        `https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks/${updatedTask.id}.json?auth=${token}`,
         {
           name: updatedTask.name,
           categoryId: updatedTask.categoryId,
