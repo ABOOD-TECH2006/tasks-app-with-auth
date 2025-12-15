@@ -1,122 +1,102 @@
-import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import TasksController from "../../controllers/tasks-controller";
 import { tasksActions } from "../../redux/tasks-slice";
+import Swal from "sweetalert2";
+
+const statusColors = {
+  Waiting: "bg-warning text-dark",
+  "In Progress": "bg-info text-white",
+  Done: "bg-primary text-white",
+  Complete: "bg-success text-white",
+  Canceled: "bg-danger text-white",
+};
 
 let TaskDetailsPage = () => {
-  let task = useSelector((state) => state.tasks.item);
-  let dispatch = useDispatch();
-  let tasksController = new TasksController();
-  let navigator = useNavigate();
+  const task = useSelector((state) => state.tasks.item);
+  const dispatch = useDispatch();
+  const tasksController = new TasksController();
+  const navigator = useNavigate();
 
-  let updateTaskStatusHandler = async (status) => {
-    let updatedTask = { ...task };
-    updatedTask.status = status;
-    let result = await tasksController.update(updatedTask);
+  const updateTaskStatusHandler = async (status) => {
+    const updatedTask = { ...task, status };
+    const result = await tasksController.update(updatedTask);
     if (result) {
-      dispatch(tasksActions.updateStatus(updatedTask));
+      dispatch(tasksActions.update(updatedTask));
+      Swal.fire("Updated!", `Task status changed to ${status}`, "success");
+    } else {
+      Swal.fire("Error", "Failed to update task status", "error");
     }
   };
 
-  let editTaskHandler = () => {
+  const editTaskHandler = () => {
     navigator(`/dashboard/tasks/update`);
   };
 
   return (
     <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
       <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 className="h2">Dashboard</h1>
-
-        <div className="mb-2 mb-md-0">
-          <div className="d-flex align-items-center ms-3 ms-lg-4"></div>
-          <div className="d-flex align-items-center ms-3 ms-lg-4"></div>
-        </div>
-
-        <div className="btn-toolbar mb-2 mb-md-0">
+        <h1 className="h2">{task.name}</h1>
+        <div className="btn-toolbar">
           <div className="btn-group me-2">
-            <button
-              type="button"
-              onClick={() => updateTaskStatusHandler("In Progress")}
-              className={`btn btn-sm btn-outline-secondary ${
-                task.status == "In Progress" && "active"
-              }`}
-            >
-              In Progress
-            </button>
-            <button
-              type="button"
-              onClick={() => updateTaskStatusHandler("Done")}
-              className={`btn btn-sm btn-outline-secondary ${
-                task.status == "Done" && "active"
-              }`}
-            >
-              Done
-            </button>
-            <button
-              type="button"
-              onClick={() => updateTaskStatusHandler("Complete")}
-              className={`btn btn-sm btn-outline-secondary ${
-                task.status == "Complete" && "active"
-              }`}
-            >
-              Complete
-            </button>
-            <button
-              type="button"
-              onClick={() => updateTaskStatusHandler("Waiting")}
-              className={`btn btn-sm btn-outline-secondary ${
-                task.status == "Waiting" && "active"
-              }`}
-            >
-              Waiting
-            </button>
-            <button
-              type="button"
-              onClick={() => updateTaskStatusHandler("Canceled")}
-              className={`btn btn-sm btn-outline-secondary ${
-                task.status == "Canceled" && "active"
-              }`}
-            >
-              Canceled
-            </button>
+            {Object.keys(statusColors).map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => updateTaskStatusHandler(status)}
+                className={`btn btn-sm ${
+                  task.status === status ? "btn-dark" : "btn-outline-secondary"
+                }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
           <button
             type="button"
+            className="btn btn-success ms-2"
             onClick={editTaskHandler}
-            className="btn btn-light-main btn"
           >
-            <span data-feather="edit-3"></span> Edit
+            Edit Task
           </button>
         </div>
       </div>
 
-      <div className="row mt-5">
+      <div className="row mt-4">
         <div className="col-md-6">
-          <img src="img/1.png" className="img-fluid rounded de-img" />
+          <img
+            src={task.image ? task.image : "/img/placeholder.png"}
+            className="img-fluid rounded shadow"
+            alt={task.name}
+            style={{ maxHeight: "400px", objectFit: "cover" }}
+          />
         </div>
-        <div className="col-md-6 mt-5">
-          <div className="mb-3">
-            <span data-feather="bookmark" className="main-color"></span>
-            <strong>Title:</strong> {task.name}
-          </div>
-          <div className="mb-3">
-            <span data-feather="layers" className="main-color"></span>
+        <div className="col-md-6 mt-3">
+          <p>
             <strong>Category:</strong> {task.categoryName}
-          </div>
-          <div className="">
-            <span data-feather="calendar" className="main-color"></span>
-            <strong>Date:</strong> {task.startDate} to {task.endDate}
-          </div>
-        </div>
-
-        <div className="row mt-5">
-          <div className="task-info">
-            <p>{task.details}</p>
+          </p>
+          <p>
+            <strong>Duration:</strong> {task.startDate} to {task.endDate}
+          </p>
+          <p>
+            <strong>Status:</strong>{" "}
+            <span className={`badge ${statusColors[task.status]}`}>
+              {task.status}
+            </span>
+          </p>
+          <p>
+            <strong>Details:</strong>
+          </p>
+          <div
+            className="p-3 border rounded shadow-sm"
+            style={{ backgroundColor: "#f8f9fa" }}
+          >
+            {task.details}
           </div>
         </div>
       </div>
     </main>
   );
 };
+
 export default TaskDetailsPage;

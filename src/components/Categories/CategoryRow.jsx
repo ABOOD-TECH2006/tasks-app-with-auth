@@ -1,54 +1,90 @@
-import { useDispatch } from "react-redux";
-import { NavLink, useNavigate } from "react-router-dom";
-import CategoriesController from "../../controllers/categories-controller";
-import { categoriesActions } from "../../redux/categories-slice";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
-let CategoryRow = (props) => {
-  let dispatch = useDispatch();
-  let navigator = useNavigate();
-  let categoriesController = new CategoriesController();
+const CategoryRow = ({ category, onDelete }) => {
+  const navigate = useNavigate();
 
-  let onDeleteHandler = async () => {
-    let result = await categoriesController.delete(props.category.id);
-    if (result) {
-      dispatch(categoriesActions.delete(props.category.id));
-    }
+  const onUpdateHandler = () => {
+    navigate(`/dashboard/categories/update`);
+    toast("Navigated to update category", {
+      icon: "✏️",
+      style: { background: "#50cc89", color: "#fff" },
+    });
   };
 
-  let onUpdateHandler = () => {
-    dispatch(categoriesActions.edit(props.category.id));
-    // navigator(`/dashboard/categories/${props.category.id}/update`);
-    navigator(`/dashboard/categories/update`);
+  const onDeleteHandler = () => {
+    if (onDelete) onDelete(category.id);
   };
 
   return (
-    <tr>
-      <th scope="row">{props.category.id}</th>
-      <td>{props.category.name}</td>
-      <td>
-        <div class="btn-group" role="group" aria-label="Basic example">
-          {/* <NavLink to={`/dashboard/categories/${props.category.id}/update`}>
-            <button type="button" class="btn btn-warning">
-              Update
-            </button>
-          </NavLink> */}
-          <button
-            type="button"
-            class="btn btn-warning"
-            onClick={onUpdateHandler}
-          >
-            Update
-          </button>
-          <button
-            type="button"
-            class="btn btn-danger"
-            onClick={onDeleteHandler}
-          >
-            Delete
-          </button>
-        </div>
-      </td>
-    </tr>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "16px 24px",
+        borderRadius: "12px",
+        background: "#fff",
+        boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+        transition: "all 0.3s ease",
+        cursor: "pointer",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "#e6f9f0";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "#fff";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      <div style={{ fontWeight: "600", fontSize: "16px", color: "#444" }}>
+        {category.name}
+      </div>
+      <div style={{ display: "flex", gap: "12px" }}>
+        <button
+          onClick={onUpdateHandler}
+          style={{
+            background: "#50cc89",
+            color: "#fff",
+            borderRadius: "8px",
+            padding: "6px 14px",
+            border: "none",
+            minWidth: "80px",
+            transition: "all 0.3s",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#47be7d")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "#50cc89")
+          }
+        >
+          Update
+        </button>
+        <button
+          onClick={onDeleteHandler}
+          style={{
+            background: "#f1416c",
+            color: "#fff",
+            borderRadius: "8px",
+            padding: "6px 14px",
+            border: "none",
+            minWidth: "80px",
+            transition: "all 0.3s",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#d7375d")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "#f1416c")
+          }
+        >
+          Delete
+        </button>
+      </div>
+    </div>
   );
 };
+
 export default CategoryRow;

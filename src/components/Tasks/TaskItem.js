@@ -2,39 +2,60 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { tasksActions } from "../../redux/tasks-slice";
 
-let TaskItem = (props) => {
-  let dispatch = useDispatch();
-  let navigator = useNavigate();
+const statusColors = {
+  Waiting: "bg-warning text-dark",
+  "In Progress": "bg-info text-white",
+  Done: "bg-primary text-white",
+  Complete: "bg-success text-white",
+  Canceled: "bg-danger text-white",
+};
 
-  let onShowDetailsHandler = () => {
-    dispatch(tasksActions.setItem(props.task));
+const TaskItem = ({ task }) => {
+  const dispatch = useDispatch();
+  const navigator = useNavigate();
+
+  const onShowDetailsHandler = () => {
+    dispatch(tasksActions.setItem(task));
     navigator(`/dashboard/tasks/details`);
   };
-  return (
-    <div className="col-md-4">
-      <div className="card task card">
-        <img src="img/3.png" className="card-img-top" alt="..." />
-        <div className="card-body">
-          <h5 className="card-title">{props.task.name}</h5>
-          <h6 className="card-subtitle mb-2 text-muted">
-            <span data-feather="calendar"></span> {props.task.startDate}
-            <span className="main-color">To </span> {props.task.endDate}
-          </h6>
-          <p className="card-text">{props.task.details}</p>
-          <hr />
-          <span className="btn badge-light-warning status-btn Wating">
-            {props.task.status}
-          </span>
 
+  return (
+    <div className="col-md-4 mb-4">
+      <div
+        className="card shadow-sm h-100 task-card"
+        style={{
+          borderRadius: "15px",
+          overflow: "hidden",
+          transition: "transform 0.3s",
+        }}
+      >
+        <img
+          src={task.image || "/img/placeholder.png"}
+          className="card-img-top"
+          alt={task.name}
+          style={{ height: "200px", objectFit: "cover" }}
+        />
+        <div className="card-body d-flex flex-column">
+          <h5 className="card-title">{task.name}</h5>
+          <h6 className="card-subtitle mb-2 text-muted">
+            {task.startDate} <span className="text-success">to</span>{" "}
+            {task.endDate}
+          </h6>
+          <p className="card-text flex-grow-1">{task.details}</p>
+          <span className={`badge ${statusColors[task.status]} mb-2`}>
+            {task.status}
+          </span>
           <button
+            className="btn btn-outline-dark mt-auto"
+            style={{ borderRadius: "8px" }}
             onClick={onShowDetailsHandler}
-            className="btn btn-bg-gray pull-right"
           >
-            <span data-feather="arrow-right"></span>
+            Details
           </button>
         </div>
       </div>
     </div>
   );
 };
+
 export default TaskItem;

@@ -1,154 +1,235 @@
-import { Fragment, useRef } from "react";
+import { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import TasksController from "../../controllers/tasks-controller";
 import Task from "../../models/Task";
 import { tasksActions } from "../../redux/tasks-slice";
+import toast, { Toaster } from "react-hot-toast";
+import Swal from "sweetalert2";
 
-let NewTaskPage = () => {
-  let categories = useSelector((state) => state.categories.data);
-  let dispatch = useDispatch();
-  let tasksController = new TasksController();
+const NewTaskPage = () => {
+  const categories = useSelector((state) => state.categories.data);
+  const dispatch = useDispatch();
+  const tasksController = new TasksController();
 
-  let nameRef = useRef();
-  let categoryRef = useRef();
-  let detailsRef = useRef();
-  let startDateRef = useRef();
-  let endDateRef = useRef();
+  const nameRef = useRef();
+  const categoryRef = useRef();
+  const detailsRef = useRef();
+  const startDateRef = useRef();
+  const endDateRef = useRef();
+  const imageRef = useRef();
 
-  let onSubmitHandler = (event) => {
-    event.preventDefault();
-    if (checkData()) {
-      save();
+  const [preview, setPreview] = useState(null);
+
+  const onImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPreview(URL.createObjectURL(file));
     }
   };
 
-  let checkData = () => {
+  const checkData = () => {
     if (
-      nameRef.current.value != "" &&
-      categoryRef.current.value != "" &&
-      detailsRef.current.value != "" &&
-      startDateRef.current.value != "" &&
-      endDateRef.current.value != ""
+      nameRef.current.value.trim() &&
+      categoryRef.current.value &&
+      detailsRef.current.value.trim() &&
+      startDateRef.current.value &&
+      endDateRef.current.value
     ) {
       return true;
     }
-    alert("Enter required data!");
+    Swal.fire("Error", "Please fill in all required fields!", "error");
     return false;
   };
 
-  let save = async () => {
-    //TODO: get new Task Object
-    let category = categories.find(
-      (element) => element.id == categoryRef.current.value
+  const save = async () => {
+    const category = categories.find(
+      (cat) => cat.id == categoryRef.current.value
     );
-    let task = new Task(
-      nameRef.current.value,
+
+    const file = imageRef.current.files[0];
+    const imageUrl = file ? URL.createObjectURL(file) : null;
+
+    const task = new Task(
+      nameRef.current.value.trim(),
       category.id,
       category.name,
-      detailsRef.current.value,
+      detailsRef.current.value.trim(),
       startDateRef.current.value,
       endDateRef.current.value,
-      "Waiting"
+      "Waiting",
+      imageUrl
     );
-    let newTaskId = await tasksController.save(task);
-    if (newTaskId) {
-      task.newTaskId = newTaskId;
-      dispatch(tasksActions.create(task));
-      clear();
+
+    try {
+      const newTaskId = await tasksController.save(task);
+      if (newTaskId) {
+        task.id = newTaskId;
+        dispatch(tasksActions.create(task));
+        toast.success("Task added successfully!");
+        clearForm();
+      } else {
+        Swal.fire("Error", "Failed to add task!", "error");
+      }
+    } catch (err) {
+      Swal.fire("Error", "Something went wrong!", "error");
     }
   };
 
-  let clear = () => {
+  const clearForm = () => {
     nameRef.current.value = "";
     categoryRef.current.value = "";
     detailsRef.current.value = "";
     startDateRef.current.value = "";
     endDateRef.current.value = "";
+    imageRef.current.value = "";
+    setPreview(null);
+  };
+
+  const onSubmitHandler = (e) => {
+    e.preventDefault();
+    if (checkData()) save();
+  };
+
+  const formStyle = {
+    backgroundColor: "#fff",
+    padding: "30px",
+    borderRadius: "15px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+    animation: "fadeInUp 0.8s ease",
+  };
+
+  const inputStyle = {
+    borderRadius: "8px",
+    border: "1px solid #50cc89",
+    padding: "10px",
+    transition: "all 0.3s ease",
+  };
+
+  const buttonStyle = {
+    backgroundColor: "#50cc89",
+    color: "#fff",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
   };
 
   return (
     <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 className="h2 mt-3">Add New Task</h1>
+      <Toaster position="top-right" />
+
+      <div
+        className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom"
+        style={{ animation: "fadeInDown 0.8s ease" }}
+      >
+        <h1 className="h2" style={{ color: "#50cc89" }}>
+          Add New Task
+        </h1>
       </div>
 
-      <form className="row mt-5" onSubmit={onSubmitHandler}>
-        <div className="col-md-12">
-          <div className="form-outline mb-4">
-            <label className="form-label">Task name</label>
-            <input
-              type="texy"
-              id="loginName"
-              className="form-control"
-              placeholder="Task name"
-              ref={nameRef}
-            />
-          </div>
+      <form style={formStyle} onSubmit={onSubmitHandler}>
+        <div className="mb-3">
+          <label className="form-label">Task Name</label>
+          <input
+            type="text"
+            ref={nameRef}
+            className="form-control"
+            placeholder="Task name"
+            style={inputStyle}
+          />
         </div>
 
-        <div className="col-md-12">
-          <div className="form-outline mb-4">
-            <label className="form-label">Task Category</label>
-            <select className="dropdown form-control" ref={categoryRef}>
-              {categories.map((element) => (
-                <option value={element.id} key={element.id}>
-                  {element.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="mb-3">
+          <label className="form-label">Category</label>
+          <select ref={categoryRef} className="form-control" style={inputStyle}>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* <div className="col-md-12">
-          <div className="form-outline mb-4">
-            <label className="form-label">Image For Task</label>
-            <input className="form-control" type="file" id="formFile" />
-          </div>
-        </div> */}
-
-        <div className="col-md-12">
+        <div className="mb-3">
           <label className="form-label">Task Details</label>
-          <div className="form-outline mb-4">
-            <textarea
-              className="form-control"
-              id="exampleFormControlTextarea1"
-              rows="3"
-              ref={detailsRef}
-            ></textarea>
-          </div>
+          <textarea
+            ref={detailsRef}
+            className="form-control"
+            rows="4"
+            placeholder="Task details"
+            style={inputStyle}
+          ></textarea>
         </div>
 
-        <div className="col-md-6">
-          <div className="form-outline mb-4">
-            <label className="form-label">Start date</label>
+        <div className="row mb-3">
+          <div className="col-md-6">
+            <label className="form-label">Start Date</label>
             <input
               type="datetime-local"
-              className="form-control"
-              placeholder="Task name"
               ref={startDateRef}
+              className="form-control"
+              style={inputStyle}
             />
           </div>
-        </div>
-
-        <div className="col-md-6">
-          <label className="form-label">End date</label>
-          <div className="form-outline mb-4">
+          <div className="col-md-6">
+            <label className="form-label">End Date</label>
             <input
               type="datetime-local"
-              className="form-control"
-              placeholder="Task name"
               ref={endDateRef}
+              className="form-control"
+              style={inputStyle}
             />
           </div>
         </div>
 
-        <div>
-          <button type="submit" className="pull-right btn btn-main mb-4">
-            Add New Task
-          </button>
+        <div className="mb-3">
+          <label className="form-label">Task Image</label>
+          <input
+            type="file"
+            ref={imageRef}
+            className="form-control"
+            accept="image/*"
+            onChange={onImageChange}
+          />
+          {preview && (
+            <img
+              src={preview}
+              alt="Preview"
+              className="img-fluid mt-2 rounded"
+              style={{ maxHeight: "200px", objectFit: "cover" }}
+            />
+          )}
         </div>
+
+        <button
+          type="submit"
+          className="btn"
+          style={buttonStyle}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#47be7d")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "#50cc89")
+          }
+        >
+          Add Task
+        </button>
       </form>
+
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px);}
+          to { opacity: 1; transform: translateY(0);}
+        }
+        @keyframes fadeInDown {
+          from { opacity: 0; transform: translateY(-20px);}
+          to { opacity: 1; transform: translateY(0);}
+        }
+      `}</style>
     </main>
   );
 };
+
 export default NewTaskPage;

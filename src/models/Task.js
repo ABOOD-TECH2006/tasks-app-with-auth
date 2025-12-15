@@ -7,6 +7,7 @@ class Task {
   startDate;
   endDate;
   status;
+  image;
 
   constructor(
     name,
@@ -15,7 +16,8 @@ class Task {
     details,
     startDate,
     endDate,
-    status
+    status,
+    image = null
   ) {
     this.name = name;
     this.categoryId = categoryId;
@@ -24,6 +26,8 @@ class Task {
     this.startDate = startDate;
     this.endDate = endDate;
     this.status = status;
+    this.image = image;
   }
 }
+
 export default Task;

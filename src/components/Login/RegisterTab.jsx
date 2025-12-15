@@ -1,142 +1,108 @@
-import { isDisabled } from "@testing-library/user-event/dist/utils";
-import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import AuthController from "../../controllers/auth-controller";
 import { authActions } from "../../redux/auth-slice";
 import SocialIcons from "./SocialIcons";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
-let RegisterTab = () => {
-  let dispatch = useDispatch();
-  let navigator = useNavigate();
-  let [isAgreed, setAgree] = useState(false);
+const RegisterTab = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const authController = new AuthController();
+  const [isAgreed, setAgree] = useState(false);
 
-  let emailRef = useRef();
-  let passwordRef = useRef();
-  let repeatPasswordRef = useRef();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+  const password = watch("password", "");
 
-  let authController = new AuthController();
-
-  let onAgreeChangeHandler = (event) => {
-    console.log(event.target.checked);
-    setAgree(event.target.checked);
-  };
-
-  let onSubmitHandler = (event) => {
-    event.preventDefault();
-    if (checkData()) {
-      register();
-    }
-  };
-
-  let checkData = () => {
-    //.validate(object ,[email: 'email|required|string|min:3|max:50'])
-    if (
-      emailRef.current.value != "" &&
-      passwordRef.current.value != "" &&
-      repeatPasswordRef.current.value != ""
-    ) {
-      if (passwordRef.current.value == repeatPasswordRef.current.value) {
-        return true;
-      }
-      alert("Password confirmation error!");
-      return false;
-    }
-    alert("Enter required data");
-    return false;
-  };
-
-  let register = async () => {
-    //
-    let response = await authController.register(
-      emailRef.current.value,
-      passwordRef.current.value
-    );
-    console.log(response);
+  const onSubmit = async (data) => {
+    const response = await authController.register(data.email, data.password);
     if (response.status) {
       localStorage.setItem("token", response.token);
       localStorage.setItem("logged_in", true);
       dispatch(authActions.register(response.token));
-      navigator("/dashboard", { replace: true });
+      toast.success("Registered successfully!");
+      navigate("/dashboard", { replace: true });
+    } else {
+      toast.error(response.message || "Registration failed");
     }
   };
 
   return (
-    <div
-      className="tab-pane fade"
-      id="pills-register"
-      role="tabpanel"
-      aria-labelledby="tab-register"
-    >
-      <form onSubmit={onSubmitHandler}>
+    <div className="tab-pane fade" id="pills-register" role="tabpanel">
+      <form onSubmit={handleSubmit(onSubmit)}>
         <SocialIcons />
 
-        <h4 className="mb-4 mt-5 text-center">or:</h4>
+        <h4 className="mb-4 mt-2 text-center">or:</h4>
 
-        {/* <div className="form-outline mb-4">
-          <input
-            type="text"
-            id="registerName"
-            className="form-control"
-            placeholder="Name"
-          />
-        </div> */}
-
-        {/* <div className="form-outline mb-4">
-          <input
-            type="text"
-            id="registerUsername"
-            className="form-control"
-            placeholder="Username"
-          />
-        </div> */}
-
-        <div className="form-outline mb-4">
+        <div className="form-outline mb-3">
           <input
             type="email"
-            id="registerEmail"
-            className="form-control"
+            className={`form-control ${errors.email ? "is-invalid" : ""}`}
             placeholder="Email"
-            ref={emailRef}
+            {...register("email", { required: "Email is required" })}
           />
+          {errors.email && (
+            <div className="invalid-feedback">{errors.email.message}</div>
+          )}
         </div>
 
-        <div className="form-outline mb-4">
+        <div className="form-outline mb-3">
           <input
             type="password"
-            id="registerPassword"
-            className="form-control"
-            placeholder="password"
-            ref={passwordRef}
+            className={`form-control ${errors.password ? "is-invalid" : ""}`}
+            placeholder="Password"
+            {...register("password", {
+              required: "Password is required",
+              minLength: { value: 6, message: "Min 6 characters" },
+            })}
           />
+          {errors.password && (
+            <div className="invalid-feedback">{errors.password.message}</div>
+          )}
         </div>
 
-        <div className="form-outline mb-4">
+        <div className="form-outline mb-3">
           <input
             type="password"
-            id="registerRepeatPassword"
-            className="form-control"
-            placeholder="repeat password"
-            ref={repeatPasswordRef}
+            className={`form-control ${
+              errors.confirmPassword ? "is-invalid" : ""
+            }`}
+            placeholder="Repeat Password"
+            {...register("confirmPassword", {
+              required: "Please confirm password",
+              validate: (value) =>
+                value === password || "Passwords do not match",
+            })}
           />
+          {errors.confirmPassword && (
+            <div className="invalid-feedback">
+              {errors.confirmPassword.message}
+            </div>
+          )}
         </div>
 
-        <div className="form-check d-flex justify-content-center mb-4">
+        <div className="form-check d-flex justify-content-center mb-3">
           <input
-            className="form-check-input me-2"
             type="checkbox"
-            id="registerCheck"
-            aria-describedby="registerCheckHelpText"
-            onChange={onAgreeChangeHandler}
+            className="form-check-input me-2"
+            id="agreeTerms"
+            checked={isAgreed}
+            onChange={() => setAgree(!isAgreed)}
           />
-          <label className="form-check-label" for="registerCheck">
-            I have read and agree to the terms
+          <label className="form-check-label" htmlFor="agreeTerms">
+            I agree to the terms
           </label>
         </div>
 
         <button
           type="submit"
-          // {...(!isAgreed && "disabled")}
           disabled={!isAgreed}
           className="btn btn-main btn-block mb-3"
         >
@@ -146,4 +112,5 @@ let RegisterTab = () => {
     </div>
   );
 };
+
 export default RegisterTab;

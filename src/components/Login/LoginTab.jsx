@@ -1,112 +1,90 @@
-import { useRef } from "react";
+import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import AuthController from "../../controllers/auth-controller";
 import { authActions } from "../../redux/auth-slice";
+import AuthController from "../../controllers/auth-controller";
 import SocialIcons from "./SocialIcons";
+import toast from "react-hot-toast";
 
-let LoginTab = () => {
-  let dispatch = useDispatch();
-  let navigator = useNavigate();
+const LoginTab = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const authController = new AuthController();
 
-  let emailRef = useRef();
-  let passwordRef = useRef();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  let authController = new AuthController();
-
-  let onSubmitHandler = (event) => {
-    event.preventDefault();
-    if (checkData()) {
-      login();
-    }
-  };
-
-  let checkData = () => {
-    if (emailRef.current.value !== "" && passwordRef.current.value !== "") {
-      return true;
-    }
-    return false;
-  };
-
-  let login = async () => {
-    let response = await authController.login(
-      emailRef.current.value,
-      passwordRef.current.value
-    );
+  const onSubmit = async (data) => {
+    const response = await authController.login(data.email, data.password);
     if (response.status) {
       localStorage.setItem("token", response.token);
       localStorage.setItem("logged_in", true);
       dispatch(authActions.login(response.token));
-      navigator("/dashboard", { replace: true });
+      toast.success("Logged in successfully!");
+      navigate("/dashboard", { replace: true });
     } else {
-      alert(response.message);
+      toast.error(response.message || "Login failed");
     }
   };
 
   return (
-    <div
-      className="tab-pane fade show active"
-      id="pills-login"
-      role="tabpanel"
-      aria-labelledby="tab-login"
-    >
-      <form onSubmit={onSubmitHandler}>
+    <div className="tab-pane fade show active" id="pills-login" role="tabpanel">
+      <form onSubmit={handleSubmit(onSubmit)}>
         <SocialIcons />
 
-        <h4 className="mb-5 mt-2 text-center">or</h4>
+        <h4 className="mb-4 mt-2 text-center">or</h4>
 
-        <div className="form-outline mb-4">
+        <div className="form-outline mb-3">
           <input
             type="email"
-            id="loginName"
-            className="form-control"
-            ref={emailRef}
+            className={`form-control ${errors.email ? "is-invalid" : ""}`}
             placeholder="Email or username"
+            {...register("email", { required: "Email is required" })}
           />
+          {errors.email && (
+            <div className="invalid-feedback">{errors.email.message}</div>
+          )}
         </div>
 
-        <div className="form-outline mb-4">
+        <div className="form-outline mb-3">
           <input
             type="password"
-            id="loginPassword"
-            className="form-control"
-            ref={passwordRef}
+            className={`form-control ${errors.password ? "is-invalid" : ""}`}
             placeholder="Password"
+            {...register("password", { required: "Password is required" })}
           />
+          {errors.password && (
+            <div className="invalid-feedback">{errors.password.message}</div>
+          )}
         </div>
 
-        <div className="row mb-4">
-          <div className="col-md-6 d-flex justify-content-center">
-            <div className="form-check mb-3 mb-md-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value=""
-                id="loginCheck"
-                checked
-              />
-              <label className="form-check-label" for="loginCheck">
-                Remember me
-              </label>
-            </div>
+        <div className="d-flex justify-content-between mb-3">
+          <div className="form-check">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="rememberMe"
+            />
+            <label className="form-check-label" htmlFor="rememberMe">
+              Remember me
+            </label>
           </div>
-
-          <div className="col-md-6 d-flex justify-content-center">
-            <a href="#!">Forgot password?</a>
-          </div>
+          <a href="#!">Forgot password?</a>
         </div>
 
         <button type="submit" className="btn btn-main btn-block mb-4">
           Sign in
         </button>
 
-        <div className="text-center">
-          <p>
-            Not a member? <a href="#!">Register</a>
-          </p>
-        </div>
+        <p className="text-center">
+          Not a member? <a href="#!">Register</a>
+        </p>
       </form>
     </div>
   );
 };
+
 export default LoginTab;

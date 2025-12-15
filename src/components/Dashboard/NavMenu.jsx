@@ -2,88 +2,54 @@ import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
 
 let NavMenu = () => {
-  let loggedIn = useSelector((state) => state.auth.loggedIn);
-  let token = useSelector((state) => state.auth.token);
+  const loggedIn = useSelector((state) => state.auth.loggedIn);
+
+  const links = [
+    { to: "/dashboard", label: "Tasks", icon: "home" },
+    { to: "/dashboard/tasks/new", label: "New Task", icon: "file" },
+    { to: "/dashboard/categories", label: "Categories", icon: "grid" },
+    {
+      to: "/dashboard/categories/new",
+      label: "New Category",
+      icon: "plus-square",
+    },
+  ];
+
   return (
     <nav
       id="sidebarMenu"
       className="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse"
+      style={{ minHeight: "100vh", transition: "all 0.3s ease" }}
     >
       <div className="position-sticky pt-3">
         <ul className="nav flex-column">
-          <li className="nav-item">
-            <NavLink
-              className={(props) =>
-                props.isActive ? "nav-link active" : "nav-link"
-              }
-              aria-current="page"
-              to="/dashboard"
-              end
-            >
-              <span data-feather="home"></span>
-              Tasks
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink
-              className={(props) =>
-                props.isActive ? "nav-link active" : "nav-link"
-              }
-              to="/dashboard/tasks/new"
-            >
-              <span data-feather="file"></span>
-              New Task
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink
-              className={(props) =>
-                props.isActive ? "nav-link active" : "nav-link"
-              }
-              to="/dashboard/categories"
-              end
-            >
-              <span data-feather="file"></span>
-              Categories
-            </NavLink>
-          </li>
-
-          <li className="nav-item">
-            <NavLink
-              className={(props) =>
-                props.isActive ? "nav-link active" : "nav-link"
-              }
-              to="/dashboard/categories/new"
-            >
-              <span data-feather="file"></span>
-              New Category
-            </NavLink>
-          </li>
-
-          {/* <li className="nav-item">{loggedIn ? "True" : "False"}</li> */}
-          {/* <li className="nav-item">{token ?? "NO_TOKEN"}</li> */}
-
-          {/* <li className="nav-item">
-            <a className="nav-link" href="#">
-              <span data-feather="users"></span>
-              other link
-            </a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link" href="#">
-              <span data-feather="bar-chart-2"></span>
-              other link
-            </a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link" href="#">
-              <span data-feather="layers"></span>
-              other link
-            </a>
-          </li> */}
+          {links.map((link) => (
+            <li className="nav-item mb-1" key={link.to}>
+              <NavLink
+                to={link.to}
+                end
+                className={({ isActive }) =>
+                  `nav-link d-flex align-items-center px-3 py-2 rounded ${
+                    isActive ? "active bg-primary text-white" : "text-dark"
+                  }`
+                }
+                style={{
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <span
+                  data-feather={link.icon}
+                  className="me-2"
+                  style={{ minWidth: "20px" }}
+                ></span>
+                {link.label}
+              </NavLink>
+            </li>
+          ))}
         </ul>
       </div>
     </nav>
   );
 };
+
 export default NavMenu;

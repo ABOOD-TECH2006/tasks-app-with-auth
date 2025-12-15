@@ -2,83 +2,69 @@ import axios from "axios";
 import Task from "../models/Task";
 
 class TasksController {
-  //CRUD
+  baseUrl = "https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks";
+
   async save(task) {
-    let token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
     try {
-      let response = await axios.post(
-        `https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks.json?auth=${token}`,
+      const response = await axios.post(
+        `${this.baseUrl}.json?auth=${token}`,
         task
       );
       return response.data.name;
-    } catch (error) {
-      //Error
+    } catch (err) {
+      console.error("Error saving task:", err);
+      return null;
     }
   }
 
   async read() {
-    let token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
     try {
-      let response = await axios.get(
-        `https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks.json?auth=${token}`
-      );
-      if (response.data.length != 0) {
-        let tasks = [];
-        for (let key in response.data) {
-          let item = response.data[key];
-          let task = new Task();
-          task.id = key;
-          task.name = item.name;
-          task.categoryId = item.categoryId;
-          task.categoryName = item.categoryName;
-          task.details = item.details;
-          task.startDate = item.startDate;
-          task.endDate = item.endDate;
-          task.status = item.status;
-          tasks.push(task);
-        }
-        return tasks;
-      }
+      const response = await axios.get(`${this.baseUrl}.json?auth=${token}`);
+      if (!response.data) return [];
+
+      return Object.entries(response.data).map(([key, item]) => {
+        const task = new Task(
+          item.name,
+          item.categoryId,
+          item.categoryName,
+          item.details,
+          item.startDate,
+          item.endDate,
+          item.status,
+          item.imageUrl || null
+        );
+        task.id = key;
+        return task;
+      });
+    } catch (err) {
+      console.error("Error reading tasks:", err);
       return [];
-    } catch (error) {
-      //Error
-      return [];
+    }
+  }
+
+  async update(task) {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(`${this.baseUrl}/${task.id}.json?auth=${token}`, task);
+      return true;
+    } catch (err) {
+      console.error("Error updating task:", err);
+      return false;
     }
   }
 
   async delete(id) {
-    let token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
     try {
-      let response = await axios.delete(
-        `https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks/${id}.json?auth=${token}`
-      );
+      await axios.delete(`${this.baseUrl}/${id}.json?auth=${token}`);
       return true;
-    } catch (error) {
-      //Error
-      return false;
-    }
-  }
-
-  async update(updatedTask) {
-    let token = localStorage.getItem("token");
-    try {
-      let response = await axios.put(
-        `https://expenses-rtk-app-default-rtdb.firebaseio.com/tasks/${updatedTask.id}.json?auth=${token}`,
-        {
-          name: updatedTask.name,
-          categoryId: updatedTask.categoryId,
-          categoryName: updatedTask.categoryName,
-          details: updatedTask.details,
-          startDate: updatedTask.startDate,
-          endDate: updatedTask.endDate,
-          status: updatedTask.status,
-        }
-      );
-      return true;
-    } catch (error) {
-      //Error
+    } catch (err) {
+      console.error("Error deleting task:", err);
       return false;
     }
   }
 }
+
 export default TasksController;
