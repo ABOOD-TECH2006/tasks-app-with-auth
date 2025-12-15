@@ -10,31 +10,43 @@ import UpdateCategoryPage from "../pages/Dashboard/UpdateCategoryPage";
 import UpdateTaskPage from "../pages/Dashboard/UpdateTaskPage";
 import LoginPage from "../pages/LoginPage";
 
-let AppRoutes = () => {
-  //guards
-  // 9083148132/365341
-  let loggedIn = useSelector((state) => state.auth.loggedIn);
+const AppRoutes = () => {
+  const loggedIn = useSelector((state) => state.auth.loggedIn);
 
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<LoginPage />} />
+      {/* Login route */}
+      <Route
+        path="/login"
+        element={loggedIn ? <Navigate to="/dashboard" /> : <LoginPage />}
+      />
+
+      {/* Redirect / to dashboard or login */}
+      <Route
+        path="/"
+        element={
+          loggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+        }
+      />
+
+      {/* Dashboard protected routes */}
       <Route
         path="/dashboard"
         element={loggedIn ? <Dashboard /> : <Navigate to="/login" />}
       >
-        <Route path="/dashboard" element={<TasksPage />} />
-        <Route path="/dashboard/tasks/new" element={<NewTaskPage />} />
-        <Route path="/dashboard/categories" element={<CategoriesPage />} />
-        <Route path="/dashboard/categories/new" element={<NewCategoryPage />} />
-        <Route
-          path="/dashboard/categories/update"
-          element={<UpdateCategoryPage />}
-        />
-        <Route path="/dashboard/tasks/details" element={<TaskDetailsPage />} />
-        <Route path="/dashboard/tasks/update" element={<UpdateTaskPage />} />
+        {/* Default dashboard page */}
+        <Route index element={<TasksPage />} /> {/* /dashboard */}
+        {/* Tasks routes */}
+        <Route path="tasks/new" element={<NewTaskPage />} />
+        <Route path="tasks/details" element={<TaskDetailsPage />} />
+        <Route path="tasks/update" element={<UpdateTaskPage />} />
+        {/* Categories routes */}
+        <Route path="categories" element={<CategoriesPage />} />
+        <Route path="categories/new" element={<NewCategoryPage />} />
+        <Route path="categories/update" element={<UpdateCategoryPage />} />
       </Route>
     </Routes>
   );
 };
+
 export default AppRoutes;

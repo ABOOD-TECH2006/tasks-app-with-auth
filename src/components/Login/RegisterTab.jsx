@@ -22,17 +22,35 @@ const RegisterTab = () => {
   const password = watch("password", "");
 
   const onSubmit = async (data) => {
-    const response = await authController.register(data.email, data.password);
-    if (response.status) {
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("logged_in", true);
-      dispatch(authActions.register(response.token));
-      toast.success("Registered successfully!");
-      navigate("/dashboard", { replace: true });
-    } else {
-      toast.error(response.message || "Registration failed");
+    if (!isAgreed) {
+      toast.error("You must agree to the terms.");
+      return;
+    }
+
+    try {
+      const response = await authController.register(data.email, data.password);
+
+      if (response.status) {
+        // Success
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("logged_in", true);
+        dispatch(authActions.register(response.token));
+        toast.success("Registered successfully!");
+        navigate("/dashboard", { replace: true });
+      } else {
+        // Backend error
+        toast.error(response.message || "Registration failed");
+      }
+    } catch (err) {
+      // Network or unexpected error
+      toast.error(err.message || "Something went wrong");
     }
   };
+
+  // Show toast for client-side validation errors
+  Object.values(errors).forEach((error) => {
+    if (error.message) toast.error(error.message);
+  });
 
   return (
     <div className="tab-pane fade" id="pills-register" role="tabpanel">
@@ -44,36 +62,28 @@ const RegisterTab = () => {
         <div className="form-outline mb-3">
           <input
             type="email"
-            className={`form-control ${errors.email ? "is-invalid" : ""}`}
+            className="form-control"
             placeholder="Email"
             {...register("email", { required: "Email is required" })}
           />
-          {errors.email && (
-            <div className="invalid-feedback">{errors.email.message}</div>
-          )}
         </div>
 
         <div className="form-outline mb-3">
           <input
             type="password"
-            className={`form-control ${errors.password ? "is-invalid" : ""}`}
+            className="form-control"
             placeholder="Password"
             {...register("password", {
               required: "Password is required",
-              minLength: { value: 6, message: "Min 6 characters" },
+              minLength: { value: 6, message: "Minimum 6 characters" },
             })}
           />
-          {errors.password && (
-            <div className="invalid-feedback">{errors.password.message}</div>
-          )}
         </div>
 
         <div className="form-outline mb-3">
           <input
             type="password"
-            className={`form-control ${
-              errors.confirmPassword ? "is-invalid" : ""
-            }`}
+            className="form-control"
             placeholder="Repeat Password"
             {...register("confirmPassword", {
               required: "Please confirm password",
@@ -81,11 +91,6 @@ const RegisterTab = () => {
                 value === password || "Passwords do not match",
             })}
           />
-          {errors.confirmPassword && (
-            <div className="invalid-feedback">
-              {errors.confirmPassword.message}
-            </div>
-          )}
         </div>
 
         <div className="form-check d-flex justify-content-center mb-3">
@@ -101,11 +106,7 @@ const RegisterTab = () => {
           </label>
         </div>
 
-        <button
-          type="submit"
-          disabled={!isAgreed}
-          className="btn btn-main btn-block mb-3"
-        >
+        <button type="submit" className="btn btn-main btn-block mb-3">
           Register
         </button>
       </form>

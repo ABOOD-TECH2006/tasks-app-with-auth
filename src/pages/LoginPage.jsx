@@ -1,14 +1,17 @@
 import { Fragment } from "react";
-
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap.js";
 import "../resources/css/custom.css";
 import LoginTab from "../components/Login/LoginTab";
 import RegisterTab from "../components/Login/RegisterTab";
+import { Toaster } from "react-hot-toast";
 
 let LoginPage = () => {
   return (
     <Fragment>
+      {/* Toaster for all toast messages */}
+      <Toaster position="top-right" reverseOrder={false} />
+
       <div className="container-fluid p-5 bg-primary text-white text-center login-cover"></div>
       <div className="container">
         <div className="row">
@@ -60,4 +63,5 @@ let LoginPage = () => {
     </Fragment>
   );
 };
+
 export default LoginPage;

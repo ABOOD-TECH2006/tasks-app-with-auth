@@ -18,17 +18,29 @@ const LoginTab = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    const response = await authController.login(data.email, data.password);
-    if (response.status) {
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("logged_in", true);
-      dispatch(authActions.login(response.token));
-      toast.success("Logged in successfully!");
-      navigate("/dashboard", { replace: true });
-    } else {
-      toast.error(response.message || "Login failed");
+    try {
+      const response = await authController.login(data.email, data.password);
+
+      if (response.status) {
+        // Success
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("logged_in", true);
+        dispatch(authActions.login(response.token));
+        toast.success("Logged in successfully!");
+        navigate("/dashboard", { replace: true });
+      } else {
+        // Backend error
+        toast.error(response.message || "Login failed");
+      }
+    } catch (err) {
+      toast.error(err.message || "Something went wrong");
     }
   };
+
+  // Show toast for client-side validation errors
+  Object.values(errors).forEach((error) => {
+    if (error.message) toast.error(error.message);
+  });
 
   return (
     <div className="tab-pane fade show active" id="pills-login" role="tabpanel">
@@ -40,25 +52,19 @@ const LoginTab = () => {
         <div className="form-outline mb-3">
           <input
             type="email"
-            className={`form-control ${errors.email ? "is-invalid" : ""}`}
+            className="form-control"
             placeholder="Email or username"
             {...register("email", { required: "Email is required" })}
           />
-          {errors.email && (
-            <div className="invalid-feedback">{errors.email.message}</div>
-          )}
         </div>
 
         <div className="form-outline mb-3">
           <input
             type="password"
-            className={`form-control ${errors.password ? "is-invalid" : ""}`}
+            className="form-control"
             placeholder="Password"
             {...register("password", { required: "Password is required" })}
           />
-          {errors.password && (
-            <div className="invalid-feedback">{errors.password.message}</div>
-          )}
         </div>
 
         <div className="d-flex justify-content-between mb-3">
