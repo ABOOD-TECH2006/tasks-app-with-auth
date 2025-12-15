@@ -9,7 +9,7 @@ import TasksPage from "../pages/Dashboard/TasksPage";
 import UpdateCategoryPage from "../pages/Dashboard/UpdateCategoryPage";
 import UpdateTaskPage from "../pages/Dashboard/UpdateTaskPage";
 import LoginPage from "../pages/LoginPage";
-
+import NotFoundPage from "../pages/Dashboard/NotFoundPage";
 const AppRoutes = () => {
   const loggedIn = useSelector((state) => state.auth.loggedIn);
 
@@ -45,6 +45,9 @@ const AppRoutes = () => {
         <Route path="categories/new" element={<NewCategoryPage />} />
         <Route path="categories/update" element={<UpdateCategoryPage />} />
       </Route>
+
+      {/* 404 page */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };
